@@ -1,0 +1,69 @@
+<!-- Plain HTML page that kicks us into the app -->
+
+<html>
+<head>
+<title>Drools+Twitter Poll</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<script type="text/javascript" src="js/jquery-1.7.1.min.js"></script>
+<script type="text/javascript">
+	var timeout;
+	var isRunning;
+	function start() {
+		$('#result').load('rest/start');
+		isRunning = true;
+	}
+	function refresh() {
+		$('#result').load('rest/refresh');
+	}
+	function stop() {
+		clearTimeout(timeout);
+		isRunning = false;
+		$('#result').load('rest/stop');
+	}
+	function poll() {
+		$('#result').load('rest/poll', function() {
+			if (isRunning) {
+				timeout = window.setTimeout(poll, 2000);
+			}
+		});
+	}
+
+	function setup() {
+		$('#loadingDiv').hide() // hide it initially
+		.ajaxStart(function() {
+			$(this).show();
+		}).ajaxStop(function() {
+			$(this).hide();
+		});
+
+	}
+</script>
+<style type="text/css">
+body {
+	background-color: Wheat;
+	color: Navy;
+	font-family:Arial,Helvetica,sans-serif;
+	padding: 0.5em;
+}
+div#result {
+	background-color: White;
+	color: Black;
+	margin-right: 50px;
+	padding: 0.5em;
+	border-style: inset;
+	border-width: 2px;
+}
+span#screenName {
+	color: crimson;
+}
+</style>
+</head>
+<body onload="setup()">
+	<a href="#" onclick="start()">start</a>&nbsp;
+	<a href="#" onclick="poll()">poll</a>&nbsp;
+	<a href="#" onclick="refresh()">refresh</a>&nbsp;
+	<a href="#" onclick="stop()">stop</a>&nbsp;
+	<div id="loadingDiv"><img src="img/spinner.gif"></div>
+	<div id="result"></div>
+</body>
+</html>
