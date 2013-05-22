@@ -3,7 +3,7 @@
     xs:schemaLocation='http://drools.org/drools-5.0/change-set http://anonsvn.jboss.org/repos/labs/labs/jbossrules/trunk/drools-api/src/main/resources/change-set-1.0.0.xsd' >
     <add>
 
-         <resource source='http://localhost:8080/guvnor-5.5.0.Final-jboss-as-7.0/org.drools.guvnor.Guvnor/package/org.drools.examples.twittercbr/LATEST'
+         <resource source='http://localhost:8080/guvnor-5.5.0.Final-jboss-as-7.0/org.drools.guvnor.Guvnor/package/org.example/LATEST'
            basicAuthentication='enabled' username='admin' password='admin' type="PKG"  />
     </add>
 </change-set>
