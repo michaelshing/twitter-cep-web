@@ -11,6 +11,7 @@ import org.drools.agent.KnowledgeAgent;
 import org.drools.agent.KnowledgeAgentConfiguration;
 import org.drools.agent.KnowledgeAgentFactory;
 import org.drools.agent.impl.PrintStreamSystemEventListener;
+import org.drools.base.evaluators.AfterEvaluatorDefinition;
 import org.drools.conf.EventProcessingOption;
 import org.drools.event.knowledgeagent.AfterChangeSetAppliedEvent;
 import org.drools.event.rule.DebugKnowledgeAgentEventListener;
@@ -28,6 +29,11 @@ import twitter4j.TwitterStream;
 import twitter4j.TwitterStreamFactory;
 
 public class TwitterCEPDelegate {
+    
+    static {
+        // avoid classloading/serialization issue
+        AfterEvaluatorDefinition after = new AfterEvaluatorDefinition();
+    }
     
     private static TwitterCEPDelegate singleton = new TwitterCEPDelegate();
 
