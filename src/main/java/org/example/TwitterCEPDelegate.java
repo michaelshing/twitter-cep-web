@@ -33,6 +33,11 @@ import twitter4j.StatusListener;
 import twitter4j.TwitterStream;
 import twitter4j.TwitterStreamFactory;
 
+/**
+ * 
+ * Singleton which encapsulates kagent/ksession operations
+ *
+ */
 public class TwitterCEPDelegate {
 
     private static Logger logger = LoggerFactory.getLogger(TwitterCEPDelegate.class);
@@ -170,7 +175,7 @@ public class TwitterCEPDelegate {
         // create kagent with change set
         KnowledgeAgentConfiguration aconf = KnowledgeAgentFactory.newKnowledgeAgentConfiguration();
         kagent = KnowledgeAgentFactory.newKnowledgeAgent("MyAgent", kbase, aconf);
-        kagent.addEventListener(new DebugKnowledgeAgentEventListener());
+        kagent.addEventListener(new DebugKnowledgeAgentEventListener(System.out));
         kagent.addEventListener(new HaltKnowledgeAgentEventListener());
 
         kagent.applyChangeSet(ResourceFactory.newClassPathResource("ChangeSet.xml"));
@@ -209,6 +214,7 @@ public class TwitterCEPDelegate {
             // If the changeset is updated, halt the ksession and re-run
             if (ksessionRunning) {
                 try {
+                    logger.info("package change detected");
                     singleton.stopKnowledgeSession();
                     singleton.run();
                 } catch (Exception e) {

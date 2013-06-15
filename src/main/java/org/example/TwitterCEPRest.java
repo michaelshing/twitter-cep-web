@@ -7,6 +7,7 @@ import javax.ws.rs.Produces;
 /**
  * 
  * REST facade of TwitterCEP
+ * Well, it's not a Restful architecture. I use JAX-RS just because it's convenient....
  * 
  */
 @Path("/")
