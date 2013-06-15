@@ -4,11 +4,11 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>org.example</groupId>
-	<artifactId>twitter-cep-rest</artifactId>
+	<artifactId>twitter-cep-web</artifactId>
 	<version>1.0.0</version>
 	<packaging>war</packaging>
-	<name>TwitterCEPRest</name>
-	<description>TwitterCEPRest</description>
+	<name>TwitterCEPWeb</name>
+	<description>TwitterCEPWeb</description>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -17,12 +17,6 @@
 	<dependencyManagement>
 		<dependencies>
 			<!-- Define the version of JBoss' Java EE 6 APIs we want to use -->
-			<!-- JBoss distributes a complete set of Java EE 6 APIs including a Bill 
-				of Materials (BOM). A BOM specifies the versions of a "stack" (or a collection) 
-				of artifacts. We use this here so that we always get the correct versions 
-				of artifacts. Here we use the jboss-javaee-6.0 stack (you can read this as 
-				the JBoss stack of the Java EE 6 APIs). You can actually use this stack with 
-				any version of JBoss AS that implements Java EE 6, not just JBoss AS 7! -->
 			<dependency>
 				<groupId>org.jboss.spec</groupId>
 				<artifactId>jboss-javaee-6.0</artifactId>
@@ -97,7 +91,7 @@
 	</dependencies>
 
 	<build>
-		<finalName>twitter-cep-rest</finalName>
+		<finalName>twitter-cep-web</finalName>
 		<plugins>
 			<plugin>
 				<artifactId>maven-war-plugin</artifactId>
