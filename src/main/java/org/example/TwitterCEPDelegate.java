@@ -1,8 +1,11 @@
 package org.example;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.drools.ClockType;
 import org.drools.KnowledgeBase;
@@ -25,6 +28,7 @@ import org.drools.runtime.KnowledgeSessionConfiguration;
 import org.drools.runtime.StatefulKnowledgeSession;
 import org.drools.runtime.conf.ClockTypeOption;
 import org.drools.runtime.rule.WorkingMemoryEntryPoint;
+import org.drools.time.SessionPseudoClock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,7 +40,7 @@ import twitter4j.TwitterStreamFactory;
 /**
  * 
  * Singleton which encapsulates kagent/ksession operations
- *
+ * 
  */
 public class TwitterCEPDelegate {
 
@@ -58,8 +62,11 @@ public class TwitterCEPDelegate {
     private List<Status> tweetList = new ArrayList<Status>();
 
     private String ruleNamesInUse;
+
     private boolean kagentRunning = false;
     private boolean ksessionRunning = false;
+
+    private boolean twitterOffline = false;
 
     private TwitterCEPDelegate() {
 
@@ -67,6 +74,14 @@ public class TwitterCEPDelegate {
 
     public static TwitterCEPDelegate getInstance() {
         return singleton;
+    }
+
+    public boolean isTwitterOffline() {
+        return twitterOffline;
+    }
+
+    public void setTwitterOffline(boolean twitterOffline) {
+        this.twitterOffline = twitterOffline;
     }
 
     public synchronized String run() throws OperationException {
@@ -98,12 +113,6 @@ public class TwitterCEPDelegate {
         // Gets the stream entry point
         final WorkingMemoryEntryPoint ep = ksession.getWorkingMemoryEntryPoint("twitter");
 
-        // Connects to the twitter stream and register the listener
-        StatusListener listener = new TwitterStatusListener(ep);
-        twitterStream = new TwitterStreamFactory().getInstance();
-        twitterStream.addListener(listener);
-        twitterStream.sample();
-
         // Start a Thread to fire rules in Drools Fusion
         new Thread(new Runnable() {
 
@@ -112,10 +121,45 @@ public class TwitterCEPDelegate {
             }
         }).start();
 
+        if (twitterOffline) {
+            // feed events from dump tweet file
+            feedEvents(ep);
+        } else {
+            // Connects to the twitter stream and register the listener
+            StatusListener listener = new TwitterStatusListener(ep);
+            twitterStream = new TwitterStreamFactory().getInstance();
+            twitterStream.addListener(listener);
+            twitterStream.sample();
+        }
+
         ksessionRunning = true;
         logger.info("ksession is running");
 
         return sb.toString();
+    }
+
+    private void feedEvents(final WorkingMemoryEntryPoint ep) {
+        try {
+            StatusListener listener = new TwitterStatusListener(ep);
+            ObjectInputStream in = new ObjectInputStream(this.getClass().getResourceAsStream("/twitterstream.dump"));
+            SessionPseudoClock clock = ksession.getSessionClock();
+
+            for (int i = 0;; i++) {
+                try {
+                    // Read an event
+                    Status st = (Status) in.readObject();
+                    // Using the pseudo clock, advance the clock
+                    clock.advanceTime(st.getCreatedAt().getTime() - clock.getCurrentTime(), TimeUnit.MILLISECONDS);
+                    // call the listener
+                    listener.onStatus(st);
+                } catch (IOException ioe) {
+                    break;
+                }
+            }
+            in.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public String poll() {
@@ -141,7 +185,11 @@ public class TwitterCEPDelegate {
     private StatefulKnowledgeSession createKnowledgeSession() {
         KnowledgeBase kbase = kagent.getKnowledgeBase();
         KnowledgeSessionConfiguration ksconf = KnowledgeBaseFactory.newKnowledgeSessionConfiguration();
-        ksconf.setOption(ClockTypeOption.get(ClockType.REALTIME_CLOCK.getId()));
+        if (twitterOffline) {
+            ksconf.setOption(ClockTypeOption.get(ClockType.PSEUDO_CLOCK.getId()));
+        } else {
+            ksconf.setOption(ClockTypeOption.get(ClockType.REALTIME_CLOCK.getId()));
+        }
         StatefulKnowledgeSession ksession = kbase.newStatefulKnowledgeSession(ksconf, null);
         return ksession;
     }
@@ -155,7 +203,9 @@ public class TwitterCEPDelegate {
         // try best to cleanup
 
         try {
-            twitterStream.cleanUp();
+            if (!twitterOffline) {
+                twitterStream.cleanUp();
+            }
         } catch (Exception e) {
             logger.error("Error while cleanup", e);
         }

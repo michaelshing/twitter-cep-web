@@ -21,13 +21,31 @@ public class TwitterCEPRest {
     private TwitterCEPDelegate delegate = TwitterCEPDelegate.getInstance(); // singleton
 
     @GET
-    @Path("/start")
+    @Path("/startOnline")
     @Produces({ "text/html" })
-    public String start() {
+    public String startOnline() {
         try {
             delegate.startKnowledgeAgent();
+            delegate.setTwitterOffline(false);
             delegate.run();
-            return "<div class='alert alert-success'><strong>kagent and ksession is running</strong></div>";
+            return "<div class='alert alert-success'><strong>kagent and ksession is running</strong> twitter is online</div>";
+        } catch (OperationException e) {
+            return "<div class='alert alert-error'><strong>" + e.toString() + "</strong></div>";
+        } catch (Exception e) {
+            logger.error("failed to start", e);
+            return "<div class='alert alert-error'><strong>" + e.toString() + "</strong></div>";
+        }
+    }
+
+    @GET
+    @Path("/startOffline")
+    @Produces({ "text/html" })
+    public String startOffline() {
+        try {
+            delegate.startKnowledgeAgent();
+            delegate.setTwitterOffline(true);
+            delegate.run();
+            return "<div class='alert alert-success'><strong>kagent and ksession is running</strong> tweets are consumed from offline dump file</div>";
         } catch (OperationException e) {
             return "<div class='alert alert-error'><strong>" + e.toString() + "</strong></div>";
         } catch (Exception e) {

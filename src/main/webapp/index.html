@@ -10,8 +10,13 @@
 <script type="text/javascript">
 	var timeout;
 	var isRunning;
-	function start() {
-		$('#message').load('rest/start');
+	function startOnline() {
+		$('#message').load('rest/startOnline');
+		isRunning = true;
+		poll();
+	}
+	function startOffline() {
+		$('#message').load('rest/startOffline');
 		isRunning = true;
 		poll();
 	}
@@ -49,7 +54,8 @@
 	<div class="container-fluid">
 		<div id="header" style="margin-bottom: 8px">
 			<h4>Drools CEP + Twitter Demo</h4>
-			<button class="btn" onclick="start()">start</button>
+			<button class="btn" onclick="startOnline()">start online</button>
+			<button class="btn" onclick="startOffline()">start offline</button>
 			<button class="btn" onclick="stop()">stop</button>
 		</div>
 		<div class="row-fluid">
