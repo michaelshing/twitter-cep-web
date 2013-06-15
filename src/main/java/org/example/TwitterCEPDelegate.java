@@ -69,10 +69,10 @@ public class TwitterCEPDelegate {
         return singleton;
     }
 
-    public synchronized String run() {
+    public synchronized String run() throws OperationException {
 
         if (ksessionRunning) {
-            throw new RuntimeException("ksession is running!");
+            throw new OperationException("ksession is running!");
         }
 
         // Creates a knowledge session
@@ -149,22 +149,30 @@ public class TwitterCEPDelegate {
     public synchronized void stopKnowledgeSession() {
 
         if (!ksessionRunning) {
-            throw new RuntimeException("ksession is not running!");
+            logger.warn("ksession is not running!");
         }
 
-        twitterStream.cleanUp();
-        ksession.halt();
-        ksession.dispose();
+        // try best to cleanup
 
-        ksessionRunning = false;
-        logger.info("ksession stopped");
-
+        try {
+            twitterStream.cleanUp();
+        } catch (Exception e) {
+            logger.error("Error while cleanup", e);
+        }
+        try {
+            ksession.halt();
+            ksession.dispose();
+            ksessionRunning = false;
+            logger.info("ksession stopped");
+        } catch (Exception e) {
+            logger.error("Error while cleanup", e);
+        }
     }
 
-    public synchronized void startKnowledgeAgent() {
+    public synchronized void startKnowledgeAgent() throws OperationException {
 
         if (kagentRunning) {
-            throw new RuntimeException("kagent is running!");
+            throw new OperationException("kagent is running!");
         }
 
         // prepare kbase to convey kbase configuration
@@ -196,17 +204,30 @@ public class TwitterCEPDelegate {
     public synchronized void stopKnowledgeAgent() {
 
         if (!kagentRunning) {
-            throw new RuntimeException("kagent is not running!");
+            logger.warn("kagent is not running!");
         }
 
-        ResourceFactory.getResourceChangeScannerService().stop();
-        ResourceFactory.getResourceChangeNotifierService().stop();
-        kagent.monitorResourceChangeEvents(false);
-        kagent.dispose();
+        // try best to cleanup
 
-        kagentRunning = false;
-        kagent = null;
-        logger.info("kagent stopped");
+        try {
+            ResourceFactory.getResourceChangeScannerService().stop();
+        } catch (Exception e) {
+            logger.error("Error while cleanup", e);
+        }
+        try {
+            ResourceFactory.getResourceChangeNotifierService().stop();
+        } catch (Exception e) {
+            logger.error("Error while cleanup", e);
+        }
+        try {
+            kagent.monitorResourceChangeEvents(false);
+            kagent.dispose();
+            kagentRunning = false;
+            kagent = null;
+            logger.info("kagent stopped");
+        } catch (Exception e) {
+            logger.error("Error while cleanup", e);
+        }
     }
 
     class HaltKnowledgeAgentEventListener extends DefaultKnowledgeAgentEventListener {

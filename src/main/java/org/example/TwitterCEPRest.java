@@ -4,6 +4,9 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * 
  * REST facade of TwitterCEP
@@ -12,6 +15,8 @@ import javax.ws.rs.Produces;
  */
 @Path("/")
 public class TwitterCEPRest {
+
+    private static Logger logger = LoggerFactory.getLogger(TwitterCEPRest.class);
 
     private TwitterCEPDelegate delegate = TwitterCEPDelegate.getInstance(); // singleton
 
@@ -23,7 +28,10 @@ public class TwitterCEPRest {
             delegate.startKnowledgeAgent();
             delegate.run();
             return "<div class='alert alert-success'><strong>kagent and ksession is running</strong></div>";
+        } catch (OperationException e) {
+            return "<div class='alert alert-error'><strong>" + e.toString() + "</strong></div>";
         } catch (Exception e) {
+            logger.error("failed to start", e);
             return "<div class='alert alert-error'><strong>" + e.toString() + "</strong></div>";
         }
     }
@@ -37,6 +45,7 @@ public class TwitterCEPRest {
             delegate.stopKnowledgeAgent();
             return "<div class='alert alert-success'><strong>kagent and ksession stopped</strong></div>";
         } catch (Exception e) {
+            logger.error("failed to stop", e);
             return "<div class='alert alert-error'><strong>" + e.toString() + "</strong></div>";
         }
     }
