@@ -25,3 +25,5 @@ Drools Fusion + Twitter4J + Rest + Guvnor demo
 - you will see that the rule change is detected by KnowledgeAgent and results will be changed without "Stop/Start"
 
 - If you click "Start offline", it will read tweets from src/main/resources/twitterstream.dump which was previously persisted. You can re-dump tweets by TwitterDumper.
+
+- Now I set twitter4j version to 3.0.3 in pom.xml. If you change it to higher version, you might need to upload twitter4j-core-x.x.x.jar as a model jar 'twitter4j' in Guvnor.
